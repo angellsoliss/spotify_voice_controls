@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block head %}
+<title>Spotify Voice Controls</title>
+{% endblock %}
+
+{% block body %}
+<div class="wrapper">
+    <div class="control_box">
+        <form action="/listen" method="get">
+            <button type="submit">Enable Voice Commands</button>
+        </form>
+        <form action="/stopListening" method="get">
+            <button type="submit">Disable Voice Commands</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

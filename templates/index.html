@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block head %}
+<title>Spotify Voice Controls</title>
+{% endblock %}
+
+{% block body %}
+<div class="wrapper">
+    <div class="login_box">
+        <h1>Hi There!</h1>
+        <p>Control spotify with your voice</p>
+        <form action='/login' method="post">
+            <input type="submit" value="Log In">
+        </form>
+    </div>
+</div>
+{% endblock %}
