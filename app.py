@@ -34,7 +34,7 @@ def listen_for_commands(access_token):
     while listening:
         try:
             with sr.Microphone() as source:
-                r.adjust_for_ambient_noise(source, duration=0.7)
+                r.adjust_for_ambient_noise(source, duration=2)
                 audio = r.listen(source)
                 speech = r.recognize_google(audio)
                 
@@ -50,6 +50,21 @@ def listen_for_commands(access_token):
                 elif speech == "play":
                     sp.start_playback(device_id=None)
                     print(speech)
+                elif speech == "mute":
+                    sp.volume(0, device_id=None)
+                    print(speech)
+                elif speech == "volume 25":
+                    sp.volume(25, device_id=None)
+                    print(speech)
+                elif speech == "volume 50":
+                    sp.volume(50, device_id=None)
+                    print(speech)
+                elif speech == "volume 75":
+                    sp.volume(75, device_id=None)
+                    print(speech)
+                elif speech == "max volume":
+                    sp.volume(100, device_id=None)
+                    print(speech)
                 elif speech == "exit":
                     break
                 else:
@@ -59,7 +74,10 @@ def listen_for_commands(access_token):
             print("could not request results; {0}".format(e))
         
         except sr.UnknownValueError:
-            print(speech + "error occurred")
+            print(speech + " error occurred")
+        
+        except Exception as ex:
+            print("unexpected error:", ex)
 
 
 #home page, prompt user to log in with their spotify account
