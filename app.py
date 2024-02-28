@@ -70,7 +70,7 @@ def index():
 #login page
 @app.route('/login', methods=['POST'])
 def login():
-    scope = 'user-modify-playback-state user-read-playback-state'
+    scope = 'user-modify-playback-state user-read-playback-state playlist-modify-public playlist-modify-private playlist-read-private playlist-read-collaborative'
 
     params = {
         'client_id': client_id,
