@@ -6,6 +6,29 @@
 
 {% block body %}
 <div class="wrapper">
+    <div class="commands_box">
+        <h1>Commands</h1>
+        <li>next: next track</li>
+        <li>previous: previous track</li>
+        <li>play: start playback</li>
+        <li>pause: pause playback</li>
+        <li>mute: mute volume</li>
+        <li>volume 25: set volume to 25%</li>
+        <li>volume 50: set volume to 50%</li>
+        <li>volume 75: set volume to 75%</li>
+        <li>max volume: set volume to 100%</li>
+        <li>save: add to selected playlist</li>
+        <li>exit: disable voice commands</li>
+    </div>
+    <div class="playlist_box">
+        <table>
+        {% for name in playlist_names %}
+            <tr>
+                <td>{{ name }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
     <div class="control_box">
         <form action="/listen" method="get">
             <button type="submit">Enable Voice Commands</button>

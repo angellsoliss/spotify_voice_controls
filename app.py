@@ -66,9 +66,10 @@ def listen_for_commands(access_token):
                     sp.volume(100, device_id=None)
                     print(speech)
                 elif speech == "exit":
+                    print("exiting...")
                     break
                 else:
-                    print(speech + "unknown command...")
+                    print(speech + " unknown command...")
         
         except sr.RequestError as e:
             print("could not request results; {0}".format(e))
@@ -146,8 +147,20 @@ def media_control():
     if datetime.now().timestamp() > session['expires_at']:
         #if token has expired, refresh token
         return redirect('/refresh-token')
+
+    sp = spotipy.Spotify(auth=session['access_token'])
+
+    #get user id
+    user_id = sp.current_user()['id']
+
+    #get user playlists
+    playlists = sp.current_user_playlists()['items']
+
+    playlist_names = []
+    for playlist in playlists:
+        playlist_names.append(f"{playlist['name']}")
     
-    return render_template('mediaControl.html')
+    return render_template('mediaControl.html', playlist_names=playlist_names)
 
 @app.route('/listen')
 def listen():
