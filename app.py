@@ -136,7 +136,7 @@ def callback():
         #redirect user to app functionality page
         return redirect('/media_control')
 
-@app.route('/media_control')
+@app.route('/media_control', methods=['POST', 'GET'])
 def media_control():
     #check if access token is present within session
     if 'access_token' not in session:
@@ -159,6 +159,10 @@ def media_control():
     playlist_names = []
     for playlist in playlists:
         playlist_names.append(f"{playlist['name']}")
+    
+    if request.method == 'POST':
+        playlist_name = request.form.get('playlist_name', '')
+        print(playlist_name)
     
     return render_template('mediaControl.html', playlist_names=playlist_names)
 
