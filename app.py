@@ -34,8 +34,9 @@ def listen_for_commands(access_token):
     while listening:
         try:
             with sr.Microphone() as source:
-                r.adjust_for_ambient_noise(source, duration=2)
-                audio = r.listen(source)
+                r.adjust_for_ambient_noise(source, duration=0.7)
+                audio = r.listen(source, phrase_time_limit=3)
+                #initialize speech string before it is used
                 speech = r.recognize_google(audio)
                 
                 if speech == "next":
@@ -66,8 +67,19 @@ def listen_for_commands(access_token):
                     sp.volume(100, device_id=None)
                     print(speech)
                 elif speech == "exit":
+                    listening = False
                     print("exiting...")
                     break
+                elif speech == "save":
+                    current_song_uris = get_current_song(access_token)
+                    if current_song_uris:
+                        try:
+                            sp.user_playlist_add_tracks(user_id, playlist_id, current_song_uris, None)
+                            print("Track(s) added to the playlist.")
+                        except Exception as e:
+                            print("Error adding track(s) to the playlist:", e)
+                    else:
+                        print("No track currently playing.")
                 else:
                     print(speech + " unknown command...")
         
@@ -77,8 +89,20 @@ def listen_for_commands(access_token):
         except sr.UnknownValueError:
             print(speech + " error occurred")
         
-        except Exception as ex:
-            print("unexpected error:", ex)
+        #except Exception as ex:
+            #print("unexpected error:", ex)
+
+
+def get_current_song(access_token):
+    sp = spotipy.Spotify(auth=access_token)
+    if listening:
+        track = sp.current_user_playing_track()
+        if track and 'item' in track and 'uri' in track['item']:
+            return [track['item']['uri']]
+        else:
+            return []  # Return empty list if track URI is not available
+    else:
+        return []
 
 
 #home page, prompt user to log in with their spotify account
@@ -151,20 +175,24 @@ def media_control():
     sp = spotipy.Spotify(auth=session['access_token'])
 
     #get user id
+    global user_id
     user_id = sp.current_user()['id']
 
     #get user playlists
     playlists = sp.current_user_playlists()['items']
 
-    playlist_names = []
+    #display playlist names on html page
+    playlist_info = []
     for playlist in playlists:
-        playlist_names.append(f"{playlist['name']}")
+        playlist_info.append((playlist['name'], playlist['id']))
     
+    #if playlist is selected
     if request.method == 'POST':
-        playlist_name = request.form.get('playlist_name', '')
-        print(playlist_name)
+        global playlist_id
+        playlist_id = request.form.get('playlist_id', '')
+        print(playlist_id)
     
-    return render_template('mediaControl.html', playlist_names=playlist_names)
+    return render_template('mediaControl.html', playlist_info=playlist_info)
 
 @app.route('/listen')
 def listen():

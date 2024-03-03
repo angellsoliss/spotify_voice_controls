@@ -26,13 +26,15 @@
         <h1>Playlists</h1>
         <form action="media_control" method="post">
         <table>
-        {% for name in playlist_names %}
+        {% for name, id in playlist_info %}
             <tr>
                 <td>
-                    <button type="submit" name="playlist_name" value="{{ name }}">{{ name }}</button>
+                    <button type="submit" name="playlist_id" value="{{ id }}">{{ name }}</button>
+                    <!-- Add a hidden input field to send the playlist name -->
+                    <input type="hidden" name="playlist_name" value="{{ name }}">
                 </td>
             </tr>
-            {% endfor %}
+        {% endfor %}
         </table>
         </form>
     </div>
