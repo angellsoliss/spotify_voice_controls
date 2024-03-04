@@ -90,8 +90,6 @@ def listen_for_commands(access_token):
                             try:
                                 sp.user_playlist_add_tracks(user_id, playlist_id, current_song_uri, None)
                                 print("Track added to the playlist.")
-                                print(current_song_uri)
-                                print(selected_playlist_track_uris)
                             except Exception as e:
                                 print("Error adding track(s) to the playlist:", e)
                         else:
@@ -202,13 +200,21 @@ def media_control():
     for playlist in playlists:
         playlist_info.append((playlist['name'], playlist['id']))
     
+    playlist_name = None
+
     #if playlist is selected
     if request.method == 'POST':
         global playlist_id
         playlist_id = request.form.get('playlist_id', '')
+        for name, i in playlist_info:
+            if i == playlist_id:
+                playlist_name = name
+                break
+        playlist_name = name
+        print(playlist_name)
         print(playlist_id)
     
-    return render_template('mediaControl.html', playlist_info=playlist_info)
+    return render_template('mediaControl.html', playlist_info=playlist_info, playlist_name=playlist_name)
 
 @app.route('/listen')
 def listen():

@@ -22,6 +22,7 @@
     </div>
     <div class="playlist_box">
         <h1>Playlists</h1>
+        <h2>Selected Playlist: {{ playlist_name }} </h2>
         <form action="media_control" method="post">
         <table>
         {% for name, id in playlist_info %}
