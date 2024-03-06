@@ -48,7 +48,7 @@ form {
     min-height: 100svh;
     background: linear-gradient(45deg, #1db954, #212121, #121212, #1db954);
     background-size: 300% 300%;
-    animation: color 35s ease-in-out infinite;
+    animation: color 25s ease-in-out infinite;
 }
 
 @keyframes color{
@@ -73,7 +73,7 @@ form {
     min-height: 100svh;
     background: linear-gradient(45deg, #1db954, #212121, #121212, #1db954);
     background-size: 300% 300%;
-    animation: color 35s ease-in-out infinite;
+    animation: color 25s ease-in-out infinite;
 }
 
 .login_box{

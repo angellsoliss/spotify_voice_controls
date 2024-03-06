@@ -195,11 +195,13 @@ def media_control():
     #get user playlists
     playlists = sp.current_user_playlists()['items']
 
+    global playlist_info
     #display playlist names on html page
     playlist_info = []
     for playlist in playlists:
         playlist_info.append((playlist['name'], playlist['id']))
     
+    global playlist_name
     playlist_name = None
 
     #if playlist is selected
@@ -214,7 +216,11 @@ def media_control():
         print(playlist_name)
         print(playlist_id)
     
-    return render_template('mediaControl.html', playlist_info=playlist_info, playlist_name=playlist_name)
+    return render_template('mediaControl.html', playlist_info=playlist_info, playlist_name=playlist_name, listening_status=listening_status)
+
+#variable used to diplay listening status on page
+global listening_status
+listening_status = 'Disabled'
 
 @app.route('/listen')
 def listen():
@@ -222,13 +228,15 @@ def listen():
     listening = True
     access_token = session['access_token']
     threading.Thread(target=listen_for_commands, args=(access_token,)).start()
-    return redirect('media_control')
+    listening_status = 'Enabled'
+    return render_template('mediaControl.html', playlist_info=playlist_info, playlist_name=playlist_name, listening_status=listening_status)
 
 @app.route('/stopListening')
 def stopListening():
     global listening
     listening = False
-    return redirect('media_control')
+    listening_status = 'Disabled'
+    return render_template('mediaControl.html', playlist_info=playlist_info, playlist_name=playlist_name, listening_status=listening_status)
 
 
 @app.route('/refresh-token')
