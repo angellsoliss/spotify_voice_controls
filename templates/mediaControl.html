@@ -22,6 +22,7 @@
     </div>
     <div class="playlist_box">
         <h1>Playlists</h1>
+        <h2><span class="emphasize">Disclaimer: longer playlists will take longer to load!</span></h2>
         <h2>Selected Playlist: {{ playlist_name }} </h2>
         <form action="media_control" method="post">
         <table>
@@ -39,7 +40,6 @@
     </div>
     <div class="control_box">
         <h1>Controls</h1>
-        <h2>Current Status: {{ listening_status }}</h2>
         <form action="/listen" method="get">
             <button type="submit">Enable Voice Commands</button>
         </form>

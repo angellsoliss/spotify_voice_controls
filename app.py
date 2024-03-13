@@ -7,6 +7,7 @@ from datetime import datetime
 import spotipy
 import speech_recognition as sr
 import threading
+import pyttsx3
 
 load_dotenv()
 client_id = os.getenv("CLIENT_ID")
@@ -27,10 +28,28 @@ listening = False
 
 r = sr.Recognizer()
 
+def get_all_playlist_tracks(sp, playlist_id):
+    offset = 0
+    all_tracks = []
+
+    while True:
+        tracks = sp.playlist_items(playlist_id, offset=offset)
+        all_tracks.extend(tracks['items'])
+
+        if len(tracks['items']) == 0:
+            break
+
+        offset += len(tracks['items'])
+
+    return all_tracks
+
 def listen_for_commands(access_token):
+    voice = pyttsx3.init()
     global listening
     #create spotipy object, pass access token
     sp = spotipy.Spotify(auth=access_token)
+    voice.say("Voice commands enabled")
+    voice.runAndWait()
     while listening:
         try:
             with sr.Microphone() as source:
@@ -68,31 +87,44 @@ def listen_for_commands(access_token):
                     print(speech)
                 elif speech == "exit":
                     listening = False
-                    print("exiting...")
+                    voice.say("Exiting.")
+                    voice.runAndWait()
                     break
                 elif speech == "save":
-                    selected_playlist_tracks = sp.playlist_items(playlist_id=playlist_id)
+                    uri_exists = False
                     current_song_uri = get_current_song(access_token)
                     extracted_current_song_uri = current_song_uri[0]
-                    selected_playlist_track_uris = []
-                    for track in selected_playlist_tracks['items']:
-                        track_uri = track['track']['uri']
-                        selected_playlist_track_uris.append(track_uri)
-                    
+ 
+                    for track_uri in selected_playlist_track_uris:
+                        if track_uri == extracted_current_song_uri:
+                            print("current song: " + extracted_current_song_uri)
+                            print("already exists: " + track_uri)
+                            uri_exists = True
+
                     if not playlist_id:
+                        voice.say("no playlist selected.")
+                        voice.runAndWait()
                         print("no playlist selected...")
 
-                    elif extracted_current_song_uri in selected_playlist_track_uris:
+                    elif uri_exists:
+                        voice.say("song already in playlist.")
+                        voice.runAndWait()
                         print("song already in playlist")
 
                     else:
                         if current_song_uri:
                             try:
                                 sp.user_playlist_add_tracks(user_id, playlist_id, current_song_uri, None)
+                                voice.say("Track added to the playlist.")
+                                voice.runAndWait()
                                 print("Track added to the playlist.")
                             except Exception as e:
-                                print("Error adding track(s) to the playlist:", e)
+                                voice.say("Error adding track to the playlist.")
+                                voice.runAndWait()
+                                print("Error adding track to the playlist:", e)
                         else:
+                            voice.say("No track currently playing.")
+                            voice.runAndWait()
                             print("No track currently playing.")
                 else:
                     print(speech + " unknown command...")
@@ -207,20 +239,24 @@ def media_control():
     #if playlist is selected
     if request.method == 'POST':
         global playlist_id
+        global selected_playlist_track_uris
+        selected_playlist_track_uris = []
         playlist_id = request.form.get('playlist_id', '')
         for name, i in playlist_info:
             if i == playlist_id:
                 playlist_name = name
                 break
-        playlist_name = name
+        
+        selected_playlist_tracks = get_all_playlist_tracks(sp, playlist_id)
+        for track in selected_playlist_tracks:
+            track_uri = track['track']['uri']
+            selected_playlist_track_uris.append(track_uri)
+
         print(playlist_name)
         print(playlist_id)
     
-    return render_template('mediaControl.html', playlist_info=playlist_info, playlist_name=playlist_name, listening_status=listening_status)
+    return render_template('mediaControl.html', playlist_info=playlist_info, playlist_name=playlist_name)
 
-#variable used to diplay listening status on page
-global listening_status
-listening_status = 'Disabled'
 
 @app.route('/listen')
 def listen():
@@ -228,15 +264,13 @@ def listen():
     listening = True
     access_token = session['access_token']
     threading.Thread(target=listen_for_commands, args=(access_token,)).start()
-    listening_status = 'Enabled'
-    return render_template('mediaControl.html', playlist_info=playlist_info, playlist_name=playlist_name, listening_status=listening_status)
+    return render_template('mediaControl.html', playlist_info=playlist_info, playlist_name=playlist_name)
 
 @app.route('/stopListening')
 def stopListening():
     global listening
     listening = False
-    listening_status = 'Disabled'
-    return render_template('mediaControl.html', playlist_info=playlist_info, playlist_name=playlist_name, listening_status=listening_status)
+    return render_template('mediaControl.html', playlist_info=playlist_info, playlist_name=playlist_name)
 
 
 @app.route('/refresh-token')
