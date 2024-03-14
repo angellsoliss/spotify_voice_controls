@@ -28,35 +28,17 @@ listening = False
 
 r = sr.Recognizer()
 
-def get_all_playlist_tracks(sp, playlist_id):
-    offset = 0
-    all_tracks = []
-
-    while True:
-        tracks = sp.playlist_items(playlist_id, offset=offset)
-        all_tracks.extend(tracks['items'])
-
-        if len(tracks['items']) == 0:
-            break
-
-        offset += len(tracks['items'])
-
-    return all_tracks
-
 def listen_for_commands(access_token):
-    voice = pyttsx3.init()
     global listening
     #create spotipy object, pass access token
     sp = spotipy.Spotify(auth=access_token)
-    voice.say("Voice commands enabled")
-    voice.runAndWait()
     while listening:
         try:
             with sr.Microphone() as source:
                 r.adjust_for_ambient_noise(source, duration=0.7)
-                audio = r.listen(source, phrase_time_limit=3)
-                #initialize speech string before it is used
+                audio = r.listen(source, phrase_time_limit=5)
                 speech = r.recognize_google(audio)
+                speech = speech.lower()
                 
                 if speech == "next":
                     sp.next_track(device_id=None)
@@ -87,9 +69,13 @@ def listen_for_commands(access_token):
                     print(speech)
                 elif speech == "exit":
                     listening = False
-                    voice.say("Exiting.")
-                    voice.runAndWait()
                     break
+                elif speech == "shuffle":
+                    sp.shuffle(state=True, device_id=None)
+                    print(speech)
+                elif speech == "shuffle off":
+                    sp.shuffle(state=False, device_id=None)
+                    print(speech)
                 elif speech == "save":
                     uri_exists = False
                     current_song_uri = get_current_song(access_token)
@@ -102,29 +88,19 @@ def listen_for_commands(access_token):
                             uri_exists = True
 
                     if not playlist_id:
-                        voice.say("no playlist selected.")
-                        voice.runAndWait()
                         print("no playlist selected...")
 
                     elif uri_exists:
-                        voice.say("song already in playlist.")
-                        voice.runAndWait()
                         print("song already in playlist")
 
                     else:
                         if current_song_uri:
                             try:
                                 sp.user_playlist_add_tracks(user_id, playlist_id, current_song_uri, None)
-                                voice.say("Track added to the playlist.")
-                                voice.runAndWait()
                                 print("Track added to the playlist.")
                             except Exception as e:
-                                voice.say("Error adding track to the playlist.")
-                                voice.runAndWait()
                                 print("Error adding track to the playlist:", e)
                         else:
-                            voice.say("No track currently playing.")
-                            voice.runAndWait()
                             print("No track currently playing.")
                 else:
                     print(speech + " unknown command...")
@@ -138,6 +114,20 @@ def listen_for_commands(access_token):
         except Exception as ex:
             print("unexpected error:", ex)
 
+def get_all_playlist_tracks(sp, playlist_id):
+    offset = 0
+    all_tracks = []
+
+    while True:
+        tracks = sp.playlist_items(playlist_id, offset=offset)
+        all_tracks.extend(tracks['items'])
+
+        if len(tracks['items']) == 0:
+            break
+
+        offset += len(tracks['items'])
+
+    return all_tracks
 
 def get_current_song(access_token):
     sp = spotipy.Spotify(auth=access_token)
