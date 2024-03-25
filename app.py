@@ -29,6 +29,8 @@ listening = False
 r = sr.Recognizer()
 
 def listen_for_commands(access_token):
+    #initialize text to speech
+    engine = pyttsx3.init()
     global listening
     #create spotipy object, pass access token
     sp = spotipy.Spotify(auth=access_token)
@@ -36,7 +38,7 @@ def listen_for_commands(access_token):
         try:
             with sr.Microphone() as source:
                 r.adjust_for_ambient_noise(source, duration=0.7)
-                audio = r.listen(source, phrase_time_limit=5)
+                audio = r.listen(source, phrase_time_limit=3)
                 speech = r.recognize_google(audio)
                 speech = speech.lower()
                 
@@ -71,9 +73,13 @@ def listen_for_commands(access_token):
                     listening = False
                     break
                 elif speech == "shuffle":
+                    engine.say("shuffle enabled")
+                    engine.runAndWait()
                     sp.shuffle(state=True, device_id=None)
                     print(speech)
                 elif speech == "shuffle off":
+                    engine.say("shuffle disabled")
+                    engine.runAndWait()
                     sp.shuffle(state=False, device_id=None)
                     print(speech)
                 elif speech == "save":
@@ -88,15 +94,21 @@ def listen_for_commands(access_token):
                             uri_exists = True
 
                     if not playlist_id:
+                        engine.say("no playlist selected")
+                        engine.runAndWait()
                         print("no playlist selected...")
 
                     elif uri_exists:
+                        engine.say("song already in playlist")
+                        engine.runAndWait()
                         print("song already in playlist")
 
                     else:
                         if current_song_uri:
                             try:
                                 sp.user_playlist_add_tracks(user_id, playlist_id, current_song_uri, None)
+                                engine.say("track added to playlist")
+                                engine.runAndWait()
                                 print("Track added to the playlist.")
                             except Exception as e:
                                 print("Error adding track to the playlist:", e)
